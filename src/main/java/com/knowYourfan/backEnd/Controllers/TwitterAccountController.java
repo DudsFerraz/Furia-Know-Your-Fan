@@ -41,13 +41,13 @@ public class TwitterAccountController {
         try {
             twitterAccountService.fetchAndSaveTwitterAccount(oauth_token, oauth_verifier, userId);
 
-            URI redirect = URI.create("http://localhost:3000?tab=socials&jwt=" + jwt);
+            URI redirect = URI.create(System.getenv("FRONTEND_URL")+ "?tab=socials&jwt=" + jwt);
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(redirect);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception ex) {
-            URI redirect = URI.create("http://localhost:3000?error=" + ex.getMessage());
+            URI redirect = URI.create(System.getenv("FRONTEND_URL")+ "?error=" + ex.getMessage());
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(redirect);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
