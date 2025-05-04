@@ -1,23 +1,16 @@
-# Etapa de build
-FROM eclipse-temurin:21-jdk AS builder
+# Dockerfile na raiz do projeto
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline
+COPY . .
 
-COPY src ./src
+RUN chmod +x ./mvnw
+
+RUN ./mvnw dependency:go-offline
 
 RUN ./mvnw clean package -DskipTests
 
-# Etapa de runtime
-FROM eclipse-temurin:21-jre
-
-WORKDIR /app
-
-COPY --from=builder /app/target/*.jar app.jar
-
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["./mvnw", "spring-boot:run"]
