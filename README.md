@@ -2,7 +2,7 @@
 
 Este é o backend da aplicação **Know Your Fan**, criada para a organização de eSports **FURIA**, com o objetivo de coletar e analisar informações dos seus fãs de forma gamificada.
 
-Este repositório contém a API (backend) do projeto. A interface web (frontend) está disponível [neste repositório](https://github.com/DudsFerraz/Furia-Know-You-Fan-frontend).
+Este repositório contém a API (backend) do projeto. A interface web (frontend) está disponível [neste repositório](https://github.com/DudsFerraz/Furia-Know-Your-fan-frontend).
 
 ## 🌟 Visão Geral
 
