@@ -33,8 +33,9 @@ public class TwitterAccountController {
     @GetMapping("/auth/callback")
     public ResponseEntity<?> twitterCallback(@RequestParam String oauth_token,
                                              @RequestParam String oauth_verifier,
-                                             @RequestParam Long userId) {
+                                             @RequestParam String state) {
 
+        Long userId = Long.parseLong(state);
         User u = userRepository.findById(userId).orElseThrow();
         String jwt = jwtService.generateToken(u);
 

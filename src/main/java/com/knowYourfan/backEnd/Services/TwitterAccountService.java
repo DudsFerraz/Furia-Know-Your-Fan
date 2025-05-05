@@ -34,12 +34,10 @@ public class TwitterAccountService {
         try {
             Twitter twitter = twitterFactoryService.getTwitterInstance();
 
-            // Gera a URL de autorização com state
-            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL);
+            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL+ "?state=" + userId);
             requestTokenStorage.put(requestToken.getToken(), requestToken);
 
-            // Adiciona o userId como state parameter
-            String authUrl = requestToken.getAuthorizationURL() + "&state=" + userId;
+            String authUrl = requestToken.getAuthorizationURL();
             return URI.create(authUrl);
 
         } catch (TwitterException e) {
