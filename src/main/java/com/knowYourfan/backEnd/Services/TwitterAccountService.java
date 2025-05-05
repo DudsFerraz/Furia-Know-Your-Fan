@@ -26,36 +26,36 @@ public class TwitterAccountService {
     private final TwitterAccountRepository twitterAccountRepository;
     private final UserRepository userRepository;
     private final TwitterFactoryService twitterFactoryService;
-    private static final String CALLBACK_URL = System.getenv("CALLBACK_URL");
 
-    private final Map<String, RequestToken> requestTokenStorage = new ConcurrentHashMap<>();
+    private static final String CALLBACK_URL = System.getenv("CALLBACK_URL");
+    private final Map<String, RequestSession> requestTokenStorage = new ConcurrentHashMap<>();
+
+    private record RequestSession(RequestToken requestToken, Long userId) {}
 
     public URI getOAuthRedirectURL(Long userId) {
         try {
             Twitter twitter = twitterFactoryService.getTwitterInstance();
-
-            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL+ "?state=" + userId);
-            requestTokenStorage.put(requestToken.getToken(), requestToken);
-
-            String authUrl = requestToken.getAuthorizationURL();
-            return URI.create(authUrl);
-
+            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL);
+            requestTokenStorage.put(requestToken.getToken(), new RequestSession(requestToken, userId));
+            return URI.create(requestToken.getAuthorizationURL());
         } catch (TwitterException e) {
             throw new RuntimeException("Failed to generate Twitter OAuth URL", e);
         }
     }
 
     @Transactional
-    public void fetchAndSaveTwitterAccount(String oauthToken, String oauthVerifier, Long currentUserId) {
+    public Long fetchAndSaveTwitterAccount(String oauthToken, String oauthVerifier) {
+        RequestSession session = requestTokenStorage.get(oauthToken);
+        if (session == null) throw new RuntimeException("Token de requisição inválido ou expirado");
+
+        Long currentUserId = session.userId();
         com.knowYourfan.backEnd.Entities.User currentUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não existe"));
 
         try {
             Twitter twitter = twitterFactoryService.getTwitterInstance();
-            RequestToken requestToken = requestTokenStorage.get(oauthToken);
-            AccessToken accessToken = twitter.getOAuthAccessToken(requestToken, oauthVerifier);
+            AccessToken accessToken = twitter.getOAuthAccessToken(session.requestToken(), oauthVerifier);
 
-            // Salvar tokens no TwitterAccount
             TwitterAccount account = twitterAccountRepository.findByUserId(currentUserId)
                     .orElseGet(TwitterAccount::new);
 
@@ -68,13 +68,12 @@ public class TwitterAccountService {
 
             twitterAccountRepository.save(account);
             updateTwitterAccount(account);
-
             currentUser.increaseXp(1000);
 
+            return currentUserId;
         } catch (TwitterException e) {
             throw new RuntimeException("Falha ao autenticar com o Twitter", e);
         }
-
     }
 
     @Transactional

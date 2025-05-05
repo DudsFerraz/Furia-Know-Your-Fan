@@ -32,27 +32,22 @@ public class TwitterAccountController {
 
     @GetMapping("/auth/callback")
     public ResponseEntity<?> twitterCallback(@RequestParam String oauth_token,
-                                             @RequestParam String oauth_verifier,
-                                             @RequestParam String state) {
-
-        Long userId = Long.parseLong(state);
-        User u = userRepository.findById(userId).orElseThrow();
-        String jwt = jwtService.generateToken(u);
-
+                                             @RequestParam String oauth_verifier) {
         try {
-            twitterAccountService.fetchAndSaveTwitterAccount(oauth_token, oauth_verifier, userId);
+            Long userId = twitterAccountService.fetchAndSaveTwitterAccount(oauth_token, oauth_verifier);
+            User u = userRepository.findById(userId).orElseThrow();
+            String jwt = jwtService.generateToken(u);
 
-            URI redirect = URI.create(System.getenv("FRONTEND_URL")+ "?tab=socials&jwt=" + jwt);
+            URI redirect = URI.create(System.getenv("FRONTEND_URL") + "?tab=socials&jwt=" + jwt);
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(redirect);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception ex) {
-            URI redirect = URI.create(System.getenv("FRONTEND_URL")+ "?error=" + ex.getMessage());
+            URI redirect = URI.create(System.getenv("FRONTEND_URL") + "?error=" + ex.getMessage());
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(redirect);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
-
 }
