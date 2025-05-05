@@ -80,8 +80,8 @@ O backend é hospedado no [Railway](https://railway.app/).
 Para rodar localmente:
 
 ```bash
-git clone https://github.com/seu-usuario/know-your-fan-backend.git
-cd know-your-fan-backend
+git clone https://github.com/DudsFerraz/Furia-Know-Your-Fan-backend.git
+cd know-Your-Fan-backend
 docker-compose up --build
 ```
 
