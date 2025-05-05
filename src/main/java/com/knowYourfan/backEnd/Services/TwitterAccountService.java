@@ -33,9 +33,9 @@ public class TwitterAccountService {
     public URI getOAuthRedirectURL(Long userId) {
         try {
             Twitter twitter = twitterFactoryService.getTwitterInstance();
-            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL + "?userId=" + userId);
+            RequestToken requestToken = twitter.getOAuthRequestToken(CALLBACK_URL);
             requestTokenStorage.put(requestToken.getToken(), requestToken);
-            return URI.create(requestToken.getAuthorizationURL());
+            return URI.create(requestToken.getAuthorizationURL() + "&state=" + userId);
         } catch (TwitterException e) {
             throw new RuntimeException("Failed to get request token", e);
         }
